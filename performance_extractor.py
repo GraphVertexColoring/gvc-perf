@@ -2,6 +2,24 @@ import os
 import os.path
 import csv
 import time
+import gzip
+import shutil
+
+def unzip_files_in_directory(directory):
+    # Unzips all .gz files in the directory and returns a list of unzipped file paths.
+    unzipped_files = []
+    for file in os.listdir(directory):
+        if file.endswith(".gz"):
+            gz_path = os.path.join(directory, file)
+            sol_path = os.path.join(directory, file[:-3])  # remove .gz
+
+            with gzip.open(gz_path, 'rb') as f_in:
+                with open(sol_path, 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+
+            unzipped_files.append(sol_path)
+    return unzipped_files
+
 
 def get_best(best_solutions_path):
     best_dict = {}
@@ -68,6 +86,8 @@ def gather_algo_performance(results_dir, feature_dict_path, best_solutions_path,
 
     all_algos = sorted(existing_algos.union(algos))
 
+    all_temp_unzipped = []
+
     # Write new performance data
     for instance_name in feature_dict:
         if instance_name not in algo_dict:
@@ -86,6 +106,10 @@ def gather_algo_performance(results_dir, feature_dict_path, best_solutions_path,
         # Process each algorithm directory in 'results_dir'
         for algo in algos:
             algo_path = os.path.join(results_dir, algo)
+
+            #unzip gz files before processing
+            temp_unzipped = unzip_files_in_directory(algo_path)
+            all_temp_unzipped.extend(temp_unzipped)
 
             # Check if the solution file exists for the instance in the current algorithm's folder
             if filename in os.listdir(algo_path):
@@ -120,6 +144,13 @@ def gather_algo_performance(results_dir, feature_dict_path, best_solutions_path,
             writer.writerow(row)
 
     print(f"Results saved to {output_csv}")
+
+    # Cleanup temporary unzipped files
+    for temp_file in all_temp_unzipped:
+        try:
+            os.remove(temp_file)
+        except Exception as e:
+            print(f"Could not delete {temp_file}: {e}")
 
 
 def run():
