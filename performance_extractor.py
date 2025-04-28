@@ -59,6 +59,22 @@ def gather_algo_performance(results_dir, feature_dict_path, best_solutions_path,
 
     algo_dict = {}
 
+    # Load existing algoPerf.csv if it exists
+    existing_data = {}
+    existing_algos = set()
+    if os.path.exists(output_csv):
+        with open(output_csv, mode='r', newline='', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                instance_name = row['instance_name']
+                existing_data[instance_name] = {k: (int(v) if v.isdigit() else v) for k, v in row.items() if k != 'instance_name'}
+                existing_algos.update(row.keys())
+        existing_algos.difference_update(['instance_name', 'best', 'best_performance'])
+    else:
+        existing_data = {}
+        existing_algos = set()
+
+
     # Load best known solutions
     best_dict = get_best(best_solutions_path)
 
@@ -89,46 +105,53 @@ def gather_algo_performance(results_dir, feature_dict_path, best_solutions_path,
 
     all_temp_unzipped = []
 
-    # Write new performance data
+    # Start merging data
     for instance_name in feature_dict:
-        if instance_name not in algo_dict:
+        # Start from existing data if available
+        if instance_name in existing_data:
+            algo_dict[instance_name] = existing_data[instance_name]
+        else:
             algo_dict[instance_name] = {}
 
-        # Set initial 'best_performance'
-        algo_dict[instance_name]['best_performance'] = int(feature_dict[instance_name]['feature_num_vertices'])
+        # Default 'best_performance'
+        if 'best_performance' not in algo_dict[instance_name]:
+            algo_dict[instance_name]['best_performance'] = int(feature_dict[instance_name]['feature_num_vertices'])
+        
         bestname = instance_name.replace(".col", "")
-        filename = instance_name.replace(".col", ".sol")
 
-        # Check for best solution from the markdown file
+        # Check best known solution
         if bestname in best_dict:
             algo_dict[instance_name]['best'] = int(best_dict[bestname]['best'])
             algo_dict[instance_name]['best_performance'] = int(best_dict[bestname]['best'])
+        else:
+            # If no "best", use current best_performance
+            algo_dict[instance_name]['best'] = algo_dict[instance_name]['best_performance']
 
-        # Process each algorithm directory in 'results_dir'
+        # Process each algorithm
         for algo in algos:
             algo_path = os.path.join(results_dir, algo)
 
-            #unzip gz files before processing
+            # Unzip any gzipped files before checking
             temp_unzipped = unzip_files_in_directory(algo_path)
             all_temp_unzipped.extend(temp_unzipped)
 
-            # Check if the solution file exists for the instance in the current algorithm's folder
-            if filename in os.listdir(algo_path):
-                with open(os.path.join(algo_path, filename), mode="r") as f:
-                    # Collect the solution's chromatic number (unique vertex count)
+            filename = instance_name.replace(".col", ".sol")
+            solution_file_path = os.path.join(algo_path, filename)
+
+            if os.path.isfile(solution_file_path):
+                with open(solution_file_path, mode="r") as f:
                     colors = {int(line.strip()) for line in f}
                     chromatic = len(colors)
 
-                    # Update the best performance
+                    # Update 'best_performance' if this chromatic number is better
                     algo_dict[instance_name]['best_performance'] = min(algo_dict[instance_name]['best_performance'], chromatic)
+
+                    # Always update with the latest chromatic number
                     algo_dict[instance_name][algo] = chromatic
             else:
-                # If no solution file is found for this algorithm, mark it as NaN
-                algo_dict[instance_name][algo] = float('nan')
-
-        # If bestname isn't found in the markdown file, use the calculated 'best_performance'
-        if bestname not in best_dict:
-            algo_dict[instance_name]['best'] = algo_dict[instance_name]['best_performance']
+                # If no solution file is found for this algo, retain existing value or NaN
+                if algo not in algo_dict[instance_name]:
+                    algo_dict[instance_name][algo] = float('nan')
 
     # Collect all algorithm names, ensuring they don't duplicate
     all_algos = sorted(existing_algos.union(algos))
@@ -161,6 +184,24 @@ def gather_algo_performance_mult(results_dir, feature_dict_path, best_solutions_
     best_dict = {}
     all_temp_unzipped = []
 
+    # Load existing performance if output already exists
+    existing_algos = set()
+    if os.path.exists(output_csv):
+        with open(output_csv, mode='r', newline='', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                instance_name = row['instance_name']
+                if instance_name not in algo_dict:
+                    algo_dict[instance_name] = {}
+                for key, value in row.items():
+                    if key == 'instance_name':
+                        continue
+                    try:
+                        algo_dict[instance_name][key] = int(value) if value and value.lower() != 'nan' else float('nan')
+                    except ValueError:
+                        algo_dict[instance_name][key] = value
+                existing_algos.update(row.keys())
+
     # Load best known solutions
     with open(best_solutions_path, mode='r', newline='', encoding='utf-8') as file:
         reader = csv.DictReader(file)
@@ -176,21 +217,25 @@ def gather_algo_performance_mult(results_dir, feature_dict_path, best_solutions_
         for row in reader:
             feature_dict[row['feature_source']] = row
 
+    
+    existing_algos.difference_update(['instance_name', 'best', 'best_performance'])
+
     # Identify runs and algorithms
     run_dirs = sorted([d for d in os.listdir(results_dir) if os.path.isdir(os.path.join(results_dir, d))])
     algos_set = set()
 
-    # First pass: initialize structure
+    # Initialize structure for any missing instances
     for instance_name in feature_dict:
-        algo_dict[instance_name] = {}
-        algo_dict[instance_name]['best_performance'] = int(feature_dict[instance_name]['feature_num_vertices'])
+        if instance_name not in algo_dict:
+            algo_dict[instance_name] = {}
+            algo_dict[instance_name]['best_performance'] = int(feature_dict[instance_name]['feature_num_vertices'])
 
-        bestname = instance_name.replace(".col", "")
-        if bestname in best_dict:
-            algo_dict[instance_name]['best'] = int(best_dict[bestname]['best'])
-            algo_dict[instance_name]['best_performance'] = int(best_dict[bestname]['best'])
-        else:
-            algo_dict[instance_name]['best'] = algo_dict[instance_name]['best_performance']
+            bestname = instance_name.replace(".col", "")
+            if bestname in best_dict:
+                algo_dict[instance_name]['best'] = int(best_dict[bestname]['best'])
+                algo_dict[instance_name]['best_performance'] = int(best_dict[bestname]['best'])
+            else:
+                algo_dict[instance_name]['best'] = algo_dict[instance_name]['best_performance']
 
     # Process each run
     for run_name in run_dirs:
@@ -203,7 +248,7 @@ def gather_algo_performance_mult(results_dir, feature_dict_path, best_solutions_
             if not os.path.isdir(algo_path):
                 continue
 
-            # Unzip any .gz files in this algo directory
+            # Unzip any .gz files
             temp_unzipped = unzip_files_in_directory(algo_path)
             all_temp_unzipped.extend(temp_unzipped)
 
@@ -224,28 +269,35 @@ def gather_algo_performance_mult(results_dir, feature_dict_path, best_solutions_
                     with open(result_file, mode="r") as f:
                         colors = {int(line.strip()) for line in f}
                         chromatic = len(colors)
+
+                        if instance_name not in algo_dict:
+                            algo_dict[instance_name] = {}
                         algo_dict[instance_name][key] = chromatic
-                        algo_dict[instance_name]['best_performance'] = min(
-                            algo_dict[instance_name]['best_performance'],
-                            chromatic
-                        )
+                        if 'best_performance' not in algo_dict[instance_name]:
+                            algo_dict[instance_name]['best_performance'] = chromatic
+                        else:
+                            algo_dict[instance_name]['best_performance'] = min(
+                                algo_dict[instance_name]['best_performance'],
+                                chromatic
+                            )
                 else:
+                    if instance_name not in algo_dict:
+                        algo_dict[instance_name] = {}
                     algo_dict[instance_name][key] = float('nan')
 
-    # Create fieldnames dynamically
-    algos = sorted(algos_set)
+    # Collect all fields dynamically
     run_keys = sorted(run_dirs)
-    fieldnames = ['instance_name', 'best', 'best_performance']
-    for algo in algos:
-        for run in run_keys:
-            fieldnames.append(f"{algo}_{run}")
+    all_algos = sorted(existing_algos.union({f"{algo}_{run}" for algo in algos_set for run in run_keys}))
+    fieldnames = ['instance_name', 'best', 'best_performance'] + all_algos
 
-    # Write wide-format CSV
+    # Write updated output
     with open(output_csv, mode='w', newline='', encoding='utf-8') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
-        for instance, data in algo_dict.items():
-            row = {'instance_name': instance, **data}
+        for instance_name, data in algo_dict.items():
+            row = {'instance_name': instance_name}
+            for field in fieldnames[1:]:  # Skip 'instance_name'
+                row[field] = data.get(field, float('nan'))
             writer.writerow(row)
 
     print(f"Results saved to {output_csv}")
