@@ -258,19 +258,21 @@ def gather_algo_performance_mult(results_dir, feature_dict_path, best_solutions_
             print(f"Could not delete {temp_file}: {e}")
 
 
+#modify placement of names here.
+# run is only meant to function with the action.
 def run(flag):
     start = time.time()
     if flag == True:
-        result_dir = "../Resources/results from GVC/Run1"
-        feature_path = "../Resources/InstanceFeatures.csv" # this value could remain static.
-        best_solutions = "../Resources/best.csv"           # Could be changed to the markdown 
-        output = "../Resources/algoPerf.csv"
+        result_dir = "../Algos/Run1" 
+        feature_path = "../coloring/Resources/InstanceFeatures.csv" # this value could remain static.
+        best_solutions = "../coloring/Resources/best.csv"           # Could be changed to the markdown 
+        output = "../coloring/Resources/algoPerf.csv"
         gather_algo_performance(result_dir, feature_path, best_solutions, output)
     else: 
-        result_dir = "../Resources/results from GVC/"
-        feature_path = "../Resources/InstanceFeatures.csv"
-        best_solutions = "../Resources/best.csv"
-        output = "../Resources/algoPerfMult.csv"
+        result_dir = "../Algos/"
+        feature_path = "../coloring/Resources/InstanceFeatures.csv"
+        best_solutions = "../coloring/Resources/best.csv"
+        output = "../coloring/Resources/algoPerfMult.csv"
         gather_algo_performance_mult(result_dir, feature_path, best_solutions, output)
     end = time.time()
     print(end-start)
