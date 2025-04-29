@@ -13,7 +13,7 @@ def unzip_files_in_directory(directory):
         if file.endswith(".gz"):
             gz_path = os.path.join(directory, file)
             sol_path = os.path.join(directory, file[:-3])  # remove .gz
-
+            
             with gzip.open(gz_path, 'rb') as f_in:
                 with open(sol_path, 'wb') as f_out:
                     shutil.copyfileobj(f_in, f_out)
@@ -257,13 +257,8 @@ def gather_algo_performance_mult(results_dir, feature_dict_path, best_solutions_
 
             for instance_name in feature_dict:
                 filename = instance_name.replace(".col", ".sol")
-                results_subdir = [d for d in os.listdir(algo_path) if d.endswith("_certificates")]
-                if results_subdir:
-                    results_path = os.path.join(algo_path, results_subdir[0])
-                    result_file = os.path.join(results_path, filename)
-                else:
-                    continue
-
+                result_file = os.path.join(algo_path, filename)
+                
                 key = f"{algo}_{run_name}"
 
                 if os.path.isfile(result_file):
