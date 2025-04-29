@@ -33,7 +33,7 @@ def get_best(best_solutions_path):
                 continue  # skip malformed rows without Instance
 
             # parse the best value as integer when possible
-            best_str = row.get('best', '')
+            best_str = row.get('Best', '')
             try:
                 best_value = int(best_str)
             except ValueError:
