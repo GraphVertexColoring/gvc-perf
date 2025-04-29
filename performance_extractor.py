@@ -206,8 +206,8 @@ def gather_algo_performance_mult(results_dir, feature_dict_path, best_solutions_
     with open(best_solutions_path, mode='r', newline='', encoding='utf-8') as file:
         reader = csv.DictReader(file)
         for row in reader:
-            key = row['Source']
-            row.pop('Source')
+            key = row['Instance']
+            row.pop('Instance')
             best_dict[key] = row
 
     # Load feature dictionary
