@@ -24,28 +24,23 @@ def unzip_files_in_directory(directory):
 
 def get_best(best_solutions_path):
     best_dict = {}
+    
+    with open(best_solutions_path, mode='r', encoding='utf-8', newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            instance = row.get('Instance')
+            if instance is None:
+                continue  # skip malformed rows without Instance
 
-    with open(best_solutions_path, mode='r', encoding = 'utf-8') as file:
-        lines = file.readlines()
+            # parse the best value as integer when possible
+            best_str = row.get('best', '')
+            try:
+                best_value = int(best_str)
+            except ValueError:
+                best_value = best_str  # leave as string if not an integer
 
-    table_lines = [line.strip() for line in lines if line.strip().startswith("|")]
+            best_dict[instance] = {'best': best_value}
 
-    # first row should be the header
-    header = [col.strip() for col in table_lines[0].strip("|").split("|")]
-
-    #skipping the second row as the format means that it is a separator row
-    for row_line in table_lines[2:]:
-        row_data = [cell.strip() for cell in row_line.strip("|").split("|")]
-
-        #skips any incomplete rows. in case a manual row was made wrong
-        if len(row_data) != len(header):
-            continue
-        
-        #creates a mapping for each header to its corresponding cell
-        row = dict(zip(header, row_data))
-        key = row.pop("Instance")
-        best_dict[key] = row
-            
     return best_dict
 ##
 # The following script assumes only valid solutions are present in the directories that it gathers performances from.
