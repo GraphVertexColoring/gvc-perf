@@ -137,6 +137,7 @@ def gather_algo_performance(results_dir, feature_dict_path, best_solutions_path,
 
             filename = instance_name.replace(".col", ".sol")
             solution_file_path = os.path.join(algo_path, filename)
+            print(f"[DEBUG] looking for {solution_file_path}")
 
             if os.path.isfile(solution_file_path):
                 with open(solution_file_path, mode="r") as f:
