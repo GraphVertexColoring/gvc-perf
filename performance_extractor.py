@@ -30,24 +30,21 @@ def get_best(best_solutions_path):
 
     table_lines = [line.strip() for line in lines if line.strip().startswith("|")]
 
-    if not table_lines:
-        print("No markdown table found in the specified file.")
-    else: 
-        # first row should be the header
-        header = [col.strip() for col in table_lines[0].strip("|").split("|")]
+    # first row should be the header
+    header = [col.strip() for col in table_lines[0].strip("|").split("|")]
 
-        #skipping the second row as the format means that it is a separator row
-        for row_line in table_lines[2:]:
-            row_data = [cell.strip() for cell in row_line.strip("|").split("|")]
+    #skipping the second row as the format means that it is a separator row
+    for row_line in table_lines[2:]:
+        row_data = [cell.strip() for cell in row_line.strip("|").split("|")]
 
-            #skips any incomplete rows. in case a manual row was made wrong
-            if len(row_data) != len(header):
-                continue
-            
-            #creates a mapping for each header to its corresponding cell
-            row = dict(zip(header, row_data))
-            key = row.pop("Instance")
-            best_dict[key] = row
+        #skips any incomplete rows. in case a manual row was made wrong
+        if len(row_data) != len(header):
+            continue
+        
+        #creates a mapping for each header to its corresponding cell
+        row = dict(zip(header, row_data))
+        key = row.pop("Instance")
+        best_dict[key] = row
             
     return best_dict
 ##
