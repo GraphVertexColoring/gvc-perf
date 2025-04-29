@@ -312,7 +312,7 @@ def gather_algo_performance_mult(results_dir, feature_dict_path, best_solutions_
 
 #modify placement of names here.
 # run is only meant to function with the action.
-def run(flag):
+def run():
     start = time.time()
 
     result_dir = "../Algos/Run1" 
