@@ -109,7 +109,7 @@ def gather_algo_performance(results_dir, feature_dict_path, best_solutions_path,
     for instance_name in feature_dict:
         # Start from existing data if available
         if instance_name in existing_data:
-            algo_dict[instance_name] = existing_data[instance_name]
+            algo_dict[instance_name] = existing_data[instance_name] # this is a quick fix and will need changing if working further
         else:
             algo_dict[instance_name] = {}
 
@@ -314,23 +314,20 @@ def gather_algo_performance_mult(results_dir, feature_dict_path, best_solutions_
 # run is only meant to function with the action.
 def run(flag):
     start = time.time()
-    if flag == True:
-        result_dir = "../Algos/Run1" 
-        feature_path = "../coloring/Resources/InstanceFeatures.csv" # this value could remain static.
-        best_solutions = "../coloring/Resources/best.csv"           # Could be changed to the markdown 
-        output = "../coloring/Resources/algoPerf.csv"
-        gather_algo_performance(result_dir, feature_path, best_solutions, output)
-    else: 
-        result_dir = "../Algos/"
-        feature_path = "../coloring/Resources/InstanceFeatures.csv"
-        best_solutions = "../coloring/Resources/best.csv"
-        output = "../coloring/Resources/algoPerfMult.csv"
-        gather_algo_performance_mult(result_dir, feature_path, best_solutions, output)
+
+    result_dir = "../Algos/Run1" 
+    feature_path = "../coloring/Resources/InstanceFeatures.csv" # this value could remain static.
+    best_solutions = "../coloring/Resources/best.csv"           # Could be changed to the markdown 
+    output = "../coloring/Resources/algoPerf.csv"
+    gather_algo_performance(result_dir, feature_path, best_solutions, output)
+
+    result_dir = "../Algos/"
+    best_solutions = "../coloring/Resources/best.csv"
+    output = "../coloring/Resources/algoPerfMult.csv"
+    gather_algo_performance_mult(result_dir, feature_path, best_solutions, output)
+
     end = time.time()
     print(end-start)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Gather algorithm performance results.")
-    parser.add_argument("--flag", required=True, help="Flag to determine if the multiple runs should be used or not")
-    args = parser.parse_args()
-    run(args.flag)
+    run()
