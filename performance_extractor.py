@@ -110,9 +110,9 @@ def gather_algo_performance(results_dir, feature_dict_path, best_solutions_path,
             algo_dict[instance_name]['best_performance'] = int(feature_dict[instance_name]['feature_num_vertices'])
 
         # Check best known solution
-        if bestname in best_dict:
-            algo_dict[instance_name]['best'] = int(best_dict[bestname]['best'])
-            algo_dict[instance_name]['best_performance'] = int(best_dict[bestname]['best'])
+        if instance_name in best_dict:
+            algo_dict[instance_name]['best'] = int(best_dict[instance_name]['best'])
+            algo_dict[instance_name]['best_performance'] = int(best_dict[instance_name]['best'])
         else:
             # If no "best", use current best_performance
             algo_dict[instance_name]['best'] = algo_dict[instance_name]['best_performance']
@@ -221,10 +221,9 @@ def gather_algo_performance_mult(results_dir, feature_dict_path, best_solutions_
             algo_dict[instance_name] = {}
             algo_dict[instance_name]['best_performance'] = int(feature_dict[instance_name]['feature_num_vertices'])
 
-            bestname = instance_name.replace(".col", "")
-            if bestname in best_dict:
-                algo_dict[instance_name]['best'] = int(best_dict[bestname]['best'])
-                algo_dict[instance_name]['best_performance'] = int(best_dict[bestname]['best'])
+            if instance_name in best_dict:
+                algo_dict[instance_name]['best'] = int(best_dict[instance_name]['best'])
+                algo_dict[instance_name]['best_performance'] = int(best_dict[instance_name]['best'])
             else:
                 algo_dict[instance_name]['best'] = algo_dict[instance_name]['best_performance']
 
