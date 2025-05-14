@@ -108,8 +108,6 @@ def gather_algo_performance(results_dir, feature_dict_path, best_solutions_path,
         # Default 'best_performance'
         if 'best_performance' not in algo_dict[instance_name]:
             algo_dict[instance_name]['best_performance'] = int(feature_dict[instance_name]['feature_num_vertices'])
-        
-        bestname = instance_name.replace(".col", "")
 
         # Check best known solution
         if bestname in best_dict:
