@@ -172,7 +172,7 @@ def gather_algo_performance_mult(results_dir, feature_dict_path, best_solutions_
     print("Processing Algorithm results (wide format, nested runs)...")
 
     algo_dict = {}
-    best_dict = {}
+    best_dict = get_best(best_solutions_path)
     all_temp_unzipped = []
 
     # Load existing performance if output already exists
@@ -192,15 +192,7 @@ def gather_algo_performance_mult(results_dir, feature_dict_path, best_solutions_
                     except ValueError:
                         algo_dict[instance_name][key] = value
                 existing_algos.update(row.keys())
-
-    # Load best known solutions
-    with open(best_solutions_path, mode='r', newline='', encoding='utf-8') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            key = row['Instance']
-            row.pop('Instance')
-            best_dict[key] = row
-
+                
     # Load feature dictionary
     feature_dict = {}
     with open(feature_dict_path, mode='r', newline='', encoding='utf-8') as file:
